@@ -58,7 +58,7 @@ public class Percolation {
     }
 
     private void link(int currentSite, int targetSite) {
-        if (!sites[targetSite]) {
+        if (sites[targetSite]) {
             quf.union(currentSite, targetSite);
         }
     }
@@ -91,7 +91,12 @@ public class Percolation {
         int lastRow = size - 1;
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                if (quf.connected(getTargetPlace(0, i), getTargetPlace(lastRow, j))) {
+                int bottomRowSite = getTargetPlace(0, i);
+                int topRowSite = getTargetPlace(lastRow, j);
+                if (quf.connected(bottomRowSite, topRowSite)) {
+                    System.out.println("---------");
+                    System.out.println(bottomRowSite + " " + topRowSite);
+                    print();
                     return true;
                 }
             }
@@ -99,21 +104,23 @@ public class Percolation {
         return false;
     }
 
-    // test client (optional)
-    public static void main(String[] args) {
-        testStraight(3);
-        testStraight(5);
+    public void print() {
+        int lastColumn = size - 1;
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                String site = sites[getTargetPlace(i, j)] ? "\u25A2" : "\u25A6";
+                if (j != lastColumn) {
+                    System.out.print(site);
+                } else {
+                    System.out.println(site);
+                }
+            }
+        }
     }
 
-    private static void testStraight(int size) {
-        Percolation test1 = new Percolation(size);
-        for (int i = 0; i < size; i++) {
-            test1.open(i, size - 1);
-        }
-        System.out.println("---------");
-        System.out.println(test1.numberOfOpenSites());
-        System.out.println(test1.numberOfOpenSites() == size);
-        System.out.println(test1.percolates());
+    // test client (optional)
+    public static void main(String[] args) {
     }
+
 
 }

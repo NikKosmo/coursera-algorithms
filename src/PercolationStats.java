@@ -21,8 +21,8 @@ public class PercolationStats {
     private int trial(int n) {
         Percolation percolation = new Percolation(n);
         while (!percolation.percolates()) {
-            percolation.open((int) StdRandom.uniform() * n,
-                             (int) StdRandom.uniform() * n);
+            percolation.open((int) (StdRandom.uniform() * n),
+                             (int) (StdRandom.uniform() * n));
         }
         return percolation.numberOfOpenSites();
     }
@@ -49,5 +49,10 @@ public class PercolationStats {
     public static void main(String[] args) {
         int gridSize = Integer.parseInt(args[0]);
         int trials = Integer.parseInt(args[1]);
+        PercolationStats percolationStats = new PercolationStats(gridSize, trials);
+        System.out.println(percolationStats.stddev());
+        System.out.println(percolationStats.mean());
+        System.out.println(percolationStats.confidenceHi());
+        System.out.println(percolationStats.confidenceLo());
     }
 }
