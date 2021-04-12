@@ -3,37 +3,69 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 public class Percolation {
 
     private final boolean[] sites;
+    //    private final boolean[] grounded;
     private final int size;
-
-    private final WeightedQuickUnionUF quf;
+    private final int totalSites;
+    private final WeightedQuickUnionUF qufWaterSource;
+    private final WeightedQuickUnionUF qufRoot;
+    private int openSites = 0;
+    private boolean percolates = false;
 
     public Percolation(int n) {
         if (n <= 0) {
             throw new IllegalArgumentException();
         }
-        int totalSites = n * n;
+        this.totalSites = n * n;
         this.sites = new boolean[totalSites];
+//        this.grounded = new boolean[totalSites];
         this.size = n;
-        this.quf = new WeightedQuickUnionUF(totalSites);
+        this.qufWaterSource = new WeightedQuickUnionUF(totalSites + 1);
+        this.qufRoot = new WeightedQuickUnionUF(totalSites + 1);
     }
 
     // opens the site (row, col) if it is not open already
     public void open(int row, int col) {
+        checkInput(row, col);
         int currentSite = getTargetPlace(row, col);
         if (!sites[currentSite]) {
+            openSites++;
             sites[currentSite] = true;
-            if (col != 0) {
+            if (col != 1) {
                 linkLeft(currentSite);
             }
-            if (col < size - 1) {
+            if (col < size) {
                 linkRight(currentSite);
             }
-            if (row != 0) {
-                linkBottom(currentSite);
-            }
-            if (row < size - 1) {
+            if (row != 1) {
                 linkTop(currentSite);
+            } else {
+                linkWaterSource(currentSite);
             }
+            if (row < size) {
+                linkBottom(currentSite);
+            } else {
+                linkRoot(currentSite);
+            }
+            tryToPercolate(currentSite);
+        }
+    }
+
+    private void linkWaterSource(int currentSite) {
+        qufWaterSource.union(currentSite, totalSites);
+    }
+
+    private void linkRoot(int currentSite) {
+//        grounded[currentSite] = true;
+//        grounded[qufWaterSource.find(currentSite)] = true;
+        //        qufRoot.union(currentSite, totalSites);
+    }
+
+    private void checkInput(int row, int col) {
+        if (row <= 0 || row > size) {
+            throw new IllegalArgumentException();
+        }
+        if (col <= 0 || col > size) {
+            throw new IllegalArgumentException();
         }
     }
 
@@ -47,79 +79,74 @@ public class Percolation {
         link(currentSite, targetSite);
     }
 
-    private void linkBottom(int currentSite) {
+    private void linkTop(int currentSite) {
         int targetSite = currentSite - size;
         link(currentSite, targetSite);
     }
 
-    private void linkTop(int currentSite) {
+    private void linkBottom(int currentSite) {
         int targetSite = currentSite + size;
         link(currentSite, targetSite);
     }
 
     private void link(int currentSite, int targetSite) {
         if (sites[targetSite]) {
-            quf.union(currentSite, targetSite);
+            qufWaterSource.union(currentSite, targetSite);
+//            if (!percolates) {
+//                if (grounded[currentSite] ^ grounded[targetSite]) {
+//                    grounded[currentSite] = true;
+//                    grounded[targetSite] = true;
+//                }
+//            }
+            qufRoot.union(currentSite, targetSite);
+        }
+    }
+
+    private void tryToPercolate(int currentSite) {
+//        if (!percolates && isFull(currentSite) && grounded[qufWaterSource.find(currentSite)]) {
+//            percolates = true;
+//        }
+        if (!percolates && isFull(currentSite) && isConnectedToRoot(currentSite)) {
+            percolates = true;
         }
     }
 
     public boolean isOpen(int row, int col) {
-        return !isFull(row, col);
+        checkInput(row, col);
+        return sites[getTargetPlace(row, col)];
     }
 
     public boolean isFull(int row, int col) {
-        return !sites[getTargetPlace(row, col)];
+        checkInput(row, col);
+        return isFull(getTargetPlace(row, col));
+    }
+
+    private boolean isFull(int currentSite) {
+        return isConnectedToWaterSource(currentSite);
     }
 
     private int getTargetPlace(int row, int col) {
-        return row * size + col;
+        return (row - 1) * size + col - 1;
     }
 
-    // returns the number of open sites
     public int numberOfOpenSites() {
-        int openSites = 0;
-        for (boolean isOpen : sites) {
-            if (isOpen) {
-                openSites++;
-            }
-        }
         return openSites;
     }
 
-    // does the system percolate?
     public boolean percolates() {
-        int lastRow = size - 1;
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                int bottomRowSite = getTargetPlace(0, i);
-                int topRowSite = getTargetPlace(lastRow, j);
-                if (quf.connected(bottomRowSite, topRowSite)) {
-                    System.out.println("---------");
-                    System.out.println(bottomRowSite + " " + topRowSite);
-                    print();
-                    return true;
-                }
-            }
-        }
-        return false;
+        return percolates;
     }
 
-    public void print() {
-        int lastColumn = size - 1;
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                String site = sites[getTargetPlace(i, j)] ? "\u25A2" : "\u25A6";
-                if (j != lastColumn) {
-                    System.out.print(site);
-                } else {
-                    System.out.println(site);
-                }
-            }
-        }
+    private boolean isConnectedToWaterSource(int i) {
+        return qufWaterSource.find(i) == qufWaterSource.find(totalSites);
     }
 
-    // test client (optional)
+    private boolean isConnectedToRoot(int i) {
+        return qufRoot.find(i) == qufRoot.find(totalSites);
+    }
+
     public static void main(String[] args) {
+        // Do nothing
     }
 
 
