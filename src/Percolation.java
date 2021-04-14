@@ -55,9 +55,7 @@ public class Percolation {
     }
 
     private void linkRoot(int currentSite) {
-//        grounded[currentSite] = true;
-//        grounded[qufWaterSource.find(currentSite)] = true;
-        //        qufRoot.union(currentSite, totalSites);
+        qufRoot.union(currentSite, totalSites);
     }
 
     private void checkInput(int row, int col) {
@@ -92,20 +90,11 @@ public class Percolation {
     private void link(int currentSite, int targetSite) {
         if (sites[targetSite]) {
             qufWaterSource.union(currentSite, targetSite);
-//            if (!percolates) {
-//                if (grounded[currentSite] ^ grounded[targetSite]) {
-//                    grounded[currentSite] = true;
-//                    grounded[targetSite] = true;
-//                }
-//            }
             qufRoot.union(currentSite, targetSite);
         }
     }
 
     private void tryToPercolate(int currentSite) {
-//        if (!percolates && isFull(currentSite) && grounded[qufWaterSource.find(currentSite)]) {
-//            percolates = true;
-//        }
         if (!percolates && isFull(currentSite) && isConnectedToRoot(currentSite)) {
             percolates = true;
         }
