@@ -1,39 +1,91 @@
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 public class Deque<Item> implements Iterable<Item> {
-    // construct an empty deque
+
+    private Node<Item> firstNode;
+    private Node<Item> lastNode;
+    private int size = 0;
+
     public Deque() {
-
     }
 
-    // is the deque empty?
     public boolean isEmpty() {
-        return false;
+        return size == 0;
     }
 
-    // return the number of items on the deque
     public int size() {
-        return 0;
+        return size;
     }
 
-    // add the item to the front
     public void addFirst(Item item) {
-
+        checkArgument(item);
+        if (size == 0) {
+            addInitialItem(item);
+        } else {
+            firstNode = Node.createBefore(item, firstNode);
+        }
+        size++;
     }
 
-    // add the item to the back
     public void addLast(Item item) {
+        checkArgument(item);
+        if (size == 0) {
+            addInitialItem(item);
+        } else {
+            lastNode = Node.createAfter(item, lastNode);
+        }
+        size++;
+    }
 
+    private void addInitialItem(Item item) {
+        Node<Item> initialNode = Node.of(item);
+        firstNode = initialNode;
+        lastNode = initialNode;
+    }
+
+    private void checkArgument(Item item) {
+        if (item == null) {
+            throw new IllegalArgumentException();
+        }
     }
 
     // remove and return the item from the front
     public Item removeFirst() {
-        return null;
+        checkIfDequeIsEmpty();
+        Node<Item> currentNode = this.firstNode;
+        if (size == 1) {
+            cleanNodes();
+        } else {
+            firstNode = firstNode.getNextNode();
+            firstNode.unlinkPrevious();
+        }
+        size--;
+        return currentNode.getItem();
     }
 
-    // remove and return the item from the back
     public Item removeLast() {
-        return null;
+        checkIfDequeIsEmpty();
+        Node<Item> currentNode = this.lastNode;
+        if (size == 1) {
+            cleanNodes();
+        } else {
+            lastNode = lastNode.getPreviousNode();
+            lastNode.unlinkNext();
+        }
+        size--;
+        return currentNode.getItem();
+    }
+
+    private void cleanNodes() {
+        firstNode = null;
+        lastNode = null;
+    }
+
+    private void checkIfDequeIsEmpty() {
+        if (size == 0) {
+            throw new NoSuchElementException();
+        }
     }
 
     // return an iterator over items in order from front to back
@@ -41,8 +93,61 @@ public class Deque<Item> implements Iterable<Item> {
         return null;
     }
 
-    // unit testing (required)
     public static void main(String[] args) {
 
     }
+
+    private static class Node<Item> {
+        private Node<Item> nextNode;
+        private Node<Item> previousNode;
+        private Item item;
+
+        public Node<Item> getNextNode() {
+            return nextNode;
+        }
+
+        public Node<Item> getPreviousNode() {
+            return previousNode;
+        }
+
+        public Item getItem() {
+            return item;
+        }
+
+        public void unlinkPrevious() {
+            if (previousNode != null) {
+                previousNode.unlinkNext();
+                previousNode = null;
+            }
+        }
+
+        public void unlinkNext() {
+            if (nextNode != null) {
+                nextNode.unlinkPrevious();
+                nextNode = null;
+            }
+        }
+
+        static <Item> Node<Item> of(Item item) {
+            Node<Item> node = new Node<>();
+            node.item = item;
+            return node;
+        }
+
+        static <Item> Node<Item> createBefore(Item item, Node<Item> nextNode) {
+            Node<Item> node = Node.of(item);
+            node.nextNode = nextNode;
+            nextNode.previousNode = node;
+            return node;
+        }
+
+        static <Item> Node<Item> createAfter(Item item, Node<Item> previousNode) {
+            Node<Item> node = Node.of(item);
+            node.previousNode = previousNode;
+            previousNode.nextNode = node;
+            return node;
+        }
+    }
+
+
 }
