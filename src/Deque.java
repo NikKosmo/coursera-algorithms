@@ -50,7 +50,6 @@ public class Deque<Item> implements Iterable<Item> {
         }
     }
 
-    // remove and return the item from the front
     public Item removeFirst() {
         checkIfDequeIsEmpty();
         Node<Item> currentNode = this.firstNode;
@@ -88,13 +87,30 @@ public class Deque<Item> implements Iterable<Item> {
         }
     }
 
-    // return an iterator over items in order from front to back
     public Iterator<Item> iterator() {
-        return null;
+        return new Iterator<Item>() {
+
+            private Node<Item> currentNode = firstNode;
+
+            @Override
+            public boolean hasNext() {
+                return currentNode != null;
+            }
+
+            @Override
+            public Item next() {
+                if (currentNode != null) {
+                    Item item = currentNode.getItem();
+                    currentNode = currentNode.getNextNode();
+                    return item;
+                }
+                throw new NoSuchElementException();
+            }
+        };
     }
 
     public static void main(String[] args) {
-
+        // do nothing
     }
 
     private static class Node<Item> {
@@ -116,15 +132,17 @@ public class Deque<Item> implements Iterable<Item> {
 
         public void unlinkPrevious() {
             if (previousNode != null) {
-                previousNode.unlinkNext();
+                Node<Item> unlinkedNode = previousNode;
                 previousNode = null;
+                unlinkedNode.unlinkNext();
             }
         }
 
         public void unlinkNext() {
             if (nextNode != null) {
-                nextNode.unlinkPrevious();
+                Node<Item> unlinkedNode = nextNode;
                 nextNode = null;
+                unlinkedNode.unlinkPrevious();
             }
         }
 
