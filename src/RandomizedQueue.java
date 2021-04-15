@@ -5,8 +5,9 @@ import java.util.NoSuchElementException;
 
 public class RandomizedQueue<Item> implements Iterable<Item> {
 
-    private Node<Item> firstNode;
+    //    private Node<Item> firstNode;
     private int size = 0;
+    private Object[] array = new Object[8];
 
     public RandomizedQueue() {
     }
@@ -21,41 +22,34 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
     public void enqueue(Item item) {
         checkArgument(item);
-        firstNode = firstNode != null ?
-                Node.createAfter(item, firstNode) :
-                Node.of(item);
+        if (size == array.length) {
+            Object[] outdatedArray = array;
+            array = new Object[size * 2];
+            System.arraycopy(outdatedArray, 0, array, 0, size);
+        }
+        array[size] = item;
         size++;
     }
 
     // remove and return a random item
     public Item dequeue() {
         checkIfQueueIsEmpty();
-        Node<Item> currentNode = getRandomNode();
-        if (currentNode == firstNode) {
-            firstNode = currentNode.getPreviousNode();
-        }
-        currentNode.unlink();
+        int place = StdRandom.uniform(size);
+        Object result = array[place];
+        array[place] = array[size - 1];
+        array[size - 1] = null;
         size--;
-        return currentNode.getItem();
+        if (array.length / 3 > size) {
+            Object[] outdatedArray = array;
+            array = new Object[array.length / 3];
+            System.arraycopy(outdatedArray, 0, array, 0, size);
+        }
+        return (Item) result;
     }
 
     public Item sample() {
         checkIfQueueIsEmpty();
-        Node<Item> currentNode = getRandomNode();
-        return currentNode.getItem();
-    }
-
-    private Node<Item> getRandomNode() {
-        int randomPosition = StdRandom.uniform(size);
-        return getTargetNode(randomPosition);
-    }
-
-    private Node<Item> getTargetNode(int targetPosition) {
-        Node<Item> currentNode = firstNode;
-        for (int i = 1; i <= targetPosition; i++) {
-            currentNode = currentNode.getPreviousNode();
-        }
-        return currentNode;
+        return (Item) array[StdRandom.uniform(size)];
     }
 
     // return an independent iterator over items in random order
@@ -63,13 +57,11 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         return new Iterator<Item>() {
 
             private int elementsLeft = size;
-            private final int[] randomOrder = createRandomOrder();
+            private final Object[] randomOrder = createRandomOrder();
 
-            private int[] createRandomOrder() {
-                int[] randomOrder = new int[size];
-                for (int i = 0; i < size; i++) {
-                    randomOrder[i] = i;
-                }
+            private Object[] createRandomOrder() {
+                Object[] randomOrder = new Object[size];
+                System.arraycopy(array, 0, randomOrder, 0, size);
                 StdRandom.shuffle(randomOrder);
                 return randomOrder;
             }
@@ -82,7 +74,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             @Override
             public Item next() {
                 if (hasNext()) {
-                    return getTargetNode(randomOrder[--elementsLeft]).getItem();
+                    return (Item) randomOrder[--elementsLeft];
                 }
                 throw new NoSuchElementException();
             }
@@ -106,64 +98,4 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         // do nothing
     }
 
-    private static class Node<Item> {
-        private Node<Item> nextNode;
-        private Node<Item> previousNode;
-        private Item item;
-
-        public Node<Item> getNextNode() {
-            return nextNode;
-        }
-
-        public Node<Item> getPreviousNode() {
-            return previousNode;
-        }
-
-        public Item getItem() {
-            return item;
-        }
-
-        public void unlinkPrevious() {
-            if (previousNode != null) {
-                previousNode.unlinkNext();
-                previousNode = null;
-            }
-        }
-
-        public void unlinkNext() {
-            if (nextNode != null) {
-                nextNode.unlinkPrevious();
-                nextNode = null;
-            }
-        }
-
-        public void unlink() {
-            if (nextNode != null) {
-                nextNode.previousNode = previousNode;
-            }
-            if (previousNode != null) {
-                previousNode.nextNode = nextNode;
-            }
-        }
-
-        static <Item> Node<Item> of(Item item) {
-            Node<Item> node = new Node<>();
-            node.item = item;
-            return node;
-        }
-
-        static <Item> Node<Item> createBefore(Item item, Node<Item> nextNode) {
-            Node<Item> node = Node.of(item);
-            node.nextNode = nextNode;
-            nextNode.previousNode = node;
-            return node;
-        }
-
-        static <Item> Node<Item> createAfter(Item item, Node<Item> previousNode) {
-            Node<Item> node = Node.of(item);
-            node.previousNode = previousNode;
-            previousNode.nextNode = node;
-            return node;
-        }
-    }
 }
