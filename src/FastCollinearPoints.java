@@ -2,11 +2,7 @@ import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 
 public class FastCollinearPoints {
@@ -18,43 +14,62 @@ public class FastCollinearPoints {
         Point[] copy = Arrays.copyOf(points, points.length);
         Arrays.sort(copy);
         checkSimilarPoints(copy);
+        List<ProtoLineSegment> protoLineSegments = new ArrayList<>();
         for (int i = 0; i < copy.length - 3; i++) {
             Point point = copy[i];
-            Tuple[] pointsWithSlopes = getSortedPointsWithSlopes(copy, point, i + 1);
-            segments.addAll(getLineSegments(point, pointsWithSlopes));
+            PointWithSlope[] pointsWithSlopes = getSortedPointsWithSlopes(copy, point, i + 1);
+            protoLineSegments.addAll(getLineSegments(point, pointsWithSlopes));
+        }
+        if (!protoLineSegments.isEmpty()) {
+            segments.addAll(cleanSubsegments(protoLineSegments));
         }
     }
 
-    private Tuple[] getSortedPointsWithSlopes(Point[] points, Point point, int indent) {
-        Tuple[] pointsWithSlopes = new Tuple[points.length - indent];
+    private List<LineSegment> cleanSubsegments(List<ProtoLineSegment> protoLineSegments) {
+        List<LineSegment> result = new ArrayList<>();
+        protoLineSegments.sort(Comparator.naturalOrder());
+        ProtoLineSegment previousSegment = protoLineSegments.get(0);
+        for (int i = 1; i < protoLineSegments.size(); i++) {
+            ProtoLineSegment currentSegment = protoLineSegments.get(i);
+            if (!previousSegment.inLine(currentSegment)) {
+                result.add(previousSegment.getLineSegment());
+                previousSegment = currentSegment;
+            }
+        }
+        result.add(previousSegment.getLineSegment());
+        return result;
+    }
+
+    private PointWithSlope[] getSortedPointsWithSlopes(Point[] points, Point point, int indent) {
+        PointWithSlope[] pointsWithSlopes = new PointWithSlope[points.length - indent];
         int pointer = 0;
         for (int j = indent; j < points.length; j++) {
             Point comparedPoint = points[j];
-            pointsWithSlopes[pointer++] = new Tuple(comparedPoint, point.slopeTo(comparedPoint));
+            pointsWithSlopes[pointer++] = new PointWithSlope(comparedPoint, point.slopeTo(comparedPoint));
         }
         Arrays.sort(pointsWithSlopes);
         return pointsWithSlopes;
     }
 
-    private List<LineSegment> getLineSegments(Point point, Tuple[] pointsWithSlopes) {
-        List<LineSegment> result = new ArrayList<>();
+    private List<ProtoLineSegment> getLineSegments(Point point, PointWithSlope[] pointsWithSlopes) {
+        List<ProtoLineSegment> result = new ArrayList<>();
         List<Point> alignedPoints = new ArrayList<>();
-        Tuple firstTuple = pointsWithSlopes[0];
+        PointWithSlope firstTuple = pointsWithSlopes[0];
         alignedPoints.add(firstTuple.getPoint());
         double currentSlope = firstTuple.getSlope();
         for (int j = 1; j < pointsWithSlopes.length; j++) {
-            Tuple currentTuple = pointsWithSlopes[j];
+            PointWithSlope currentTuple = pointsWithSlopes[j];
             if (currentSlope != currentTuple.getSlope()) {
-                if (alignedPoints.size() > 3) {
-                    result.add(new LineSegment(point, alignedPoints.get(alignedPoints.size() - 1)));
+                if (alignedPoints.size() >= 3) {
+                    result.add(new ProtoLineSegment(point, alignedPoints.get(alignedPoints.size() - 1)));
                 }
                 alignedPoints.clear();
             }
             alignedPoints.add(currentTuple.getPoint());
             currentSlope = currentTuple.getSlope();
         }
-        if (alignedPoints.size() > 3) {
-            result.add(new LineSegment(point, alignedPoints.get(alignedPoints.size() - 1)));
+        if (alignedPoints.size() >= 3) {
+            result.add(new ProtoLineSegment(point, alignedPoints.get(alignedPoints.size() - 1)));
         }
         return result;
     }
@@ -90,11 +105,11 @@ public class FastCollinearPoints {
         }
     }
 
-    private static class Tuple implements Comparable<Tuple> {
+    private static class PointWithSlope implements Comparable<PointWithSlope> {
         private final Point point;
         private final double slope;
 
-        Tuple(Point point, double slope) {
+        PointWithSlope(Point point, double slope) {
             this.point = point;
             this.slope = slope;
         }
@@ -108,8 +123,51 @@ public class FastCollinearPoints {
         }
 
         @Override
-        public int compareTo(Tuple o) {
+        public int compareTo(PointWithSlope o) {
             return Double.compare(this.getSlope(), o.getSlope());
+        }
+    }
+
+    private static class ProtoLineSegment implements Comparable<ProtoLineSegment> {
+        private final Point first;
+        private final Point second;
+        private Double slope;
+
+        private ProtoLineSegment(Point first, Point second) {
+            this.first = first;
+            this.second = second;
+        }
+
+        public Point getFirst() {
+            return first;
+        }
+
+        public Point getSecond() {
+            return second;
+        }
+
+        public double getSlope() {
+            if (slope == null) {
+                slope = first.slopeTo(second);
+            }
+            return slope;
+        }
+
+        public boolean inLine(ProtoLineSegment another) {
+            return this.second == another.getSecond()
+                    && this.getSlope() == another.getSlope();
+        }
+
+        public LineSegment getLineSegment() {
+            return new LineSegment(first, second);
+        }
+
+        @Override
+        public int compareTo(ProtoLineSegment o) {
+            return Comparator.comparing(ProtoLineSegment::getSecond)
+                    .thenComparing(ProtoLineSegment::getSlope)
+                    .thenComparing(ProtoLineSegment::getFirst)
+                    .compare(this, o);
         }
     }
 

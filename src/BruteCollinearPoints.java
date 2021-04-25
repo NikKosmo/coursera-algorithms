@@ -67,6 +67,7 @@ public class BruteCollinearPoints {
 
     public static void main(String[] args) {
 
+
         // read the n points from a file
         In in = new In(args[0]);
         int n = in.readInt();
@@ -78,10 +79,6 @@ public class BruteCollinearPoints {
         }
 
         // draw the points
-        printPoints(points);
-    }
-
-    private static void printPoints(Point[] points) {
         StdDraw.enableDoubleBuffering();
         StdDraw.setXscale(0, 32768);
         StdDraw.setYscale(0, 32768);
@@ -98,4 +95,5 @@ public class BruteCollinearPoints {
         }
         StdDraw.show();
     }
+
 }
