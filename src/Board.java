@@ -30,34 +30,70 @@ public class Board {
                 stringBuilder.append(tiles[i][j]);
                 stringBuilder.append(" ");
             }
-
         }
         return stringBuilder.toString();
     }
 
-    // board dimension n
     public int dimension() {
         return size;
     }
 
-    // number of tiles out of place
     public int hamming() {
-        return 0;
+        int result = 0;
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                result += hammingByPoint(i, j);
+            }
+        }
+        return result;
     }
 
-    // sum of Manhattan distances between tiles and goal
+    private int hammingByPoint(int row, int col) {
+        int tile = tiles[row][col];
+        return tile == 0 || (getTargetRow(tile) == row && getTargetCol(tile) == col) ?
+                0 :
+                1;
+    }
+
     public int manhattan() {
-        return 0;
+        int result = 0;
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                result += manhattanByPoint(i, j);
+            }
+        }
+        return result;
     }
 
-    // is this board the goal board?
+    private int manhattanByPoint(int row, int col) {
+        int tile = tiles[row][col];
+        if (tile == 0) {
+            return 0;
+        }
+        int targetRow = getTargetRow(tile);
+        int targetCol = getTargetCol(tile);
+        return Math.abs(row - targetRow) + Math.abs(col - targetCol);
+    }
+
+    private int getTargetCol(int tile) {
+        return (tile - 1) % size;
+    }
+
+    private int getTargetRow(int tile) {
+        return (tile - 1) / size;
+    }
+
     public boolean isGoal() {
-        return false;
+        return hamming() == 0;
     }
 
     // does this board equal y?
-    public boolean equals(Object y) {
-        return false;
+
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Board board = (Board) o;
+        return size == board.size && Arrays.deepEquals(tiles, board.tiles);
     }
 
     // all neighboring boards
