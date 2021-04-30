@@ -29,6 +29,15 @@ class BoardTest {
         return new Board(tiles);
     }
 
+    @Test
+    public void correctNeighbors() {
+        Board exampleBoard = createExampleBoard();
+        Board smallBoard = createSmallBoard();
+        Assertions.assertEquals(4, exampleBoard.neighbors().size());
+        exampleBoard.neighbors().forEach(board -> Assertions.assertEquals(3, board.neighbors().size()));
+        Assertions.assertEquals(2, smallBoard.neighbors().size());
+    }
+
     private Board createExampleBoard() {
         int[][] tiles = {
                 {8, 1, 3},
@@ -37,4 +46,14 @@ class BoardTest {
         };
         return new Board(tiles);
     }
+
+    private Board createSmallBoard() {
+        int[][] tiles = {
+                {1, 3},
+                {0, 2}
+        };
+        return new Board(tiles);
+    }
+
+
 }
