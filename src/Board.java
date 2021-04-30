@@ -6,10 +6,16 @@ public class Board {
 
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
-    private final int[][] tiles;
-    private final int size;
+    private int[][] tiles;
+    private int size;
     private int emptyRow = -1;
     private int emptyCol = -1;
+    private int hamming = -1;
+    private int manhattan = -1;
+    private List<Board> neighbours;
+
+    private Board() {
+    }
 
     public Board(int[][] tiles) {
         this.tiles = deepCopy(tiles);
@@ -33,15 +39,14 @@ public class Board {
         return result;
     }
 
-    // string representation of this board
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(size);
         for (int row = 0; row < size; row++) {
             stringBuilder.append("\n");
             for (int col = 0; col < size; col++) {
-                stringBuilder.append(tiles[row][col]);
                 stringBuilder.append(" ");
+                stringBuilder.append(tiles[row][col]);
             }
         }
         return stringBuilder.toString();
@@ -52,13 +57,16 @@ public class Board {
     }
 
     public int hamming() {
-        int result = 0;
-        for (int row = 0; row < size; row++) {
-            for (int col = 0; col < size; col++) {
-                result += hammingByPoint(row, col);
+        if (hamming < 0) {
+            int result = 0;
+            for (int row = 0; row < size; row++) {
+                for (int col = 0; col < size; col++) {
+                    result += hammingByPoint(row, col);
+                }
             }
+            hamming = result;
         }
-        return result;
+        return hamming;
     }
 
     private int hammingByPoint(int row, int col) {
@@ -69,13 +77,16 @@ public class Board {
     }
 
     public int manhattan() {
-        int result = 0;
-        for (int row = 0; row < size; row++) {
-            for (int col = 0; col < size; col++) {
-                result += manhattanByPoint(row, col);
+        if (manhattan < 0) {
+            int result = 0;
+            for (int row = 0; row < size; row++) {
+                for (int col = 0; col < size; col++) {
+                    result += manhattanByPoint(row, col);
+                }
             }
+            manhattan = result;
         }
-        return result;
+        return manhattan;
     }
 
     private int manhattanByPoint(int row, int col) {
@@ -100,25 +111,28 @@ public class Board {
         return hamming() == 0;
     }
 
-    // does this board equal y?
-
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Board board = (Board) o;
+//        for (int row = 0; row < size; row++) {
+//            System.out.println(board.tiles[row] == tiles[row]);
+//        }
         return size == board.size && Arrays.deepEquals(tiles, board.tiles);
     }
 
     private Board moveUp() {
         int[][] result = Arrays.copyOf(tiles, size);
-        swapVertical(result, emptyRow - 1);
-        return new Board(result);
+        int resultEmptyRow = emptyRow - 1;
+        swapVertical(result, resultEmptyRow);
+        return createNewBoard(result, resultEmptyRow, emptyCol);
     }
 
     private Board moveDown() {
         int[][] result = Arrays.copyOf(tiles, size);
-        swapVertical(result, emptyRow + 1);
-        return new Board(result);
+        int resultEmptyRow = emptyRow + 1;
+        swapVertical(result, resultEmptyRow);
+        return createNewBoard(result, resultEmptyRow, emptyCol);
     }
 
     private void swapVertical(int[][] result, int targetRow) {
@@ -129,61 +143,80 @@ public class Board {
     }
 
     private Board moveRight() {
+        int resultEmptyCol = emptyCol + 1;
         int[][] result = new int[tiles.length][];
         for (int row = 0; row < size; row++) {
             if (row == emptyRow) {
-                result[row] = swapHorizontal(tiles[row], emptyCol + 1);
+                result[row] = swapHorizontal(tiles[row], resultEmptyCol);
             } else {
                 result[row] = tiles[row];
             }
         }
-        return new Board(result);
+        return createNewBoard(result, emptyRow, resultEmptyCol);
     }
 
     private Board moveLeft() {
+        int resultEmptyCol = emptyCol - 1;
         int[][] result = new int[tiles.length][];
         for (int row = 0; row < size; row++) {
             if (row == emptyRow) {
-                result[row] = swapHorizontal(tiles[row], emptyCol - 1);
+                result[row] = swapHorizontal(tiles[row], resultEmptyCol);
             } else {
                 result[row] = tiles[row];
             }
         }
-        return new Board(result);
+        return createNewBoard(result, emptyRow, resultEmptyCol);
     }
 
     private int[] swapHorizontal(int[] row, int swappedPlace) {
+        return swapHorizontal(row, emptyCol, swappedPlace);
+    }
+
+    private int[] swapHorizontal(int[] row, int one, int another) {
         int[] result = Arrays.copyOf(row, size);
-        result[emptyCol] = row[swappedPlace];
-        result[swappedPlace] = row[emptyCol];
+        result[one] = row[another];
+        result[another] = row[one];
         return result;
     }
 
-    // all neighboring boards
-    public List<Board> neighbors() {
-        // TODO: 30.04.2021 make lazy?
-        List<Board> result = new ArrayList<>(4);
-        if (emptyRow > 0) {
-            result.add(moveUp());
+    public Iterable<Board> neighbors() {
+        if (neighbours == null) {
+            neighbours = new ArrayList<>(4);
+            if (emptyRow > 0) {
+                neighbours.add(moveUp());
+            }
+            if (emptyCol > 0) {
+                neighbours.add(moveLeft());
+            }
+            if (emptyRow < size - 1) {
+                neighbours.add(moveDown());
+            }
+            if (emptyCol < size - 1) {
+                neighbours.add(moveRight());
+            }
         }
-        if (emptyCol > 0) {
-            result.add(moveLeft());
-        }
-        if (emptyRow < size - 1) {
-            result.add(moveDown());
-        }
-        if (emptyCol < size - 1) {
-            result.add(moveRight());
-        }
-        return result;
+        return neighbours;
     }
 
-    // a board that is obtained by exchanging any pair of tiles
     public Board twin() {
-        return null;
+        int[][] result = Arrays.copyOf(tiles, size);
+        if (emptyRow == 0) {
+            result[size - 1] = swapHorizontal(result[size - 1], 0, 1);
+        } else {
+            result[0] = swapHorizontal(result[0], 0, 1);
+        }
+        return createNewBoard(result, emptyRow, emptyCol);
     }
 
-    // unit testing (not graded)
+    private Board createNewBoard(int[][] board, int newEmptyRow, int newEmptyCol) {
+        Board result = new Board();
+        result.tiles = board;
+        result.size = board.length;
+        result.emptyRow = newEmptyRow;
+        result.emptyCol = newEmptyCol;
+        return result;
+    }
+
     public static void main(String[] args) {
 
     }

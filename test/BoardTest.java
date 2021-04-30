@@ -29,13 +29,22 @@ class BoardTest {
         return new Board(tiles);
     }
 
+//    @Test
+//    public void correctNeighbors() {
+//        Board exampleBoard = createExampleBoard();
+//        Board smallBoard = createSmallBoard();
+//        Assertions.assertEquals(4, exampleBoard.neighbors().size());
+//        exampleBoard.neighbors().forEach(board -> Assertions.assertEquals(3, board.neighbors().size()));
+//        Assertions.assertEquals(2, smallBoard.neighbors().size());
+//    }
+
     @Test
-    public void correctNeighbors() {
-        Board exampleBoard = createExampleBoard();
-        Board smallBoard = createSmallBoard();
-        Assertions.assertEquals(4, exampleBoard.neighbors().size());
-        exampleBoard.neighbors().forEach(board -> Assertions.assertEquals(3, board.neighbors().size()));
-        Assertions.assertEquals(2, smallBoard.neighbors().size());
+    public void twinCreation() {
+        Board exampleBoard = createSmallBoard();
+        Board twin = exampleBoard.twin();
+        System.out.println(twin);
+        System.out.println(exampleBoard);
+        System.out.println(exampleBoard.equals(twin));
     }
 
     private Board createExampleBoard() {
@@ -49,8 +58,8 @@ class BoardTest {
 
     private Board createSmallBoard() {
         int[][] tiles = {
+                {0, 2},
                 {1, 3},
-                {0, 2}
         };
         return new Board(tiles);
     }
