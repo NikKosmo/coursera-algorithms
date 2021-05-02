@@ -7,9 +7,9 @@ public class Board {
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
     private int[][] tiles;
-    private int size;
-    private int emptyRow = -1;
-    private int emptyCol = -1;
+    private short size;
+    private short emptyRow = -1;
+    private short emptyCol = -1;
     private int hamming = -1;
     private int manhattan = -1;
     private List<Board> neighbours;
@@ -19,15 +19,15 @@ public class Board {
 
     public Board(int[][] tiles) {
         this.tiles = deepCopy(tiles);
-        this.size = tiles.length;
+        this.size = (short) tiles.length;
     }
 
     private int[][] deepCopy(int[][] tiles) {
         int[][] result = new int[tiles.length][];
-        for (int row = 0; row < tiles.length; row++) {
+        for (short row = 0; row < tiles.length; row++) {
             result[row] = Arrays.copyOf(tiles[row], tiles.length);
             if (emptyRow < 0) {
-                for (int col = 0; col < tiles.length; col++) {
+                for (short col = 0; col < tiles.length; col++) {
                     if (tiles[row][col] == 0) {
                         emptyRow = row;
                         emptyCol = col;
@@ -123,14 +123,14 @@ public class Board {
 
     private Board moveUp() {
         int[][] result = Arrays.copyOf(tiles, size);
-        int resultEmptyRow = emptyRow - 1;
+        short resultEmptyRow = (short) (emptyRow - 1);
         swapVertical(result, resultEmptyRow);
         return createNewBoard(result, resultEmptyRow, emptyCol);
     }
 
     private Board moveDown() {
         int[][] result = Arrays.copyOf(tiles, size);
-        int resultEmptyRow = emptyRow + 1;
+        short resultEmptyRow = (short) (emptyRow + 1);
         swapVertical(result, resultEmptyRow);
         return createNewBoard(result, resultEmptyRow, emptyCol);
     }
@@ -143,9 +143,9 @@ public class Board {
     }
 
     private Board moveRight() {
-        int resultEmptyCol = emptyCol + 1;
+        short resultEmptyCol = (short) (emptyCol + 1);
         int[][] result = new int[tiles.length][];
-        for (int row = 0; row < size; row++) {
+        for (short row = 0; row < size; row++) {
             if (row == emptyRow) {
                 result[row] = swapHorizontal(tiles[row], resultEmptyCol);
             } else {
@@ -156,9 +156,9 @@ public class Board {
     }
 
     private Board moveLeft() {
-        int resultEmptyCol = emptyCol - 1;
+        short resultEmptyCol = (short) (emptyCol - 1);
         int[][] result = new int[tiles.length][];
-        for (int row = 0; row < size; row++) {
+        for (short row = 0; row < size; row++) {
             if (row == emptyRow) {
                 result[row] = swapHorizontal(tiles[row], resultEmptyCol);
             } else {
@@ -206,10 +206,10 @@ public class Board {
         return createNewBoard(result, emptyRow, emptyCol);
     }
 
-    private Board createNewBoard(int[][] board, int newEmptyRow, int newEmptyCol) {
+    private Board createNewBoard(int[][] board, short newEmptyRow, short newEmptyCol) {
         Board result = new Board();
         result.tiles = board;
-        result.size = board.length;
+        result.size = (short) board.length;
         result.emptyRow = newEmptyRow;
         result.emptyCol = newEmptyCol;
         return result;
