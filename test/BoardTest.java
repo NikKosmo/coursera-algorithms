@@ -51,7 +51,11 @@ class BoardTest {
         int[][] tiles = {
                 {8, 1, 3},
                 {4, 0, 2},
-                {7, 6, 5}
+                {7, 6, 5},
+
+//                {1, 2, 3},
+//                {4, 6, 5},
+//                {7, 8, 0},
         };
         return new Board(tiles);
     }
@@ -60,8 +64,30 @@ class BoardTest {
         int[][] tiles = {
                 {0, 2},
                 {1, 3},
+
+//                {2, 1},
+//                {3, 0},
+
         };
         return new Board(tiles);
+    }
+
+    @Test
+    public void solverForSolvable() {
+        Board exampleBoard = createExampleBoard();
+        Solver solver = new Solver(exampleBoard);
+        for (Board board : solver.solution()) {
+            System.out.println(board);
+            System.out.println("----->");
+        }
+        Assertions.assertTrue(solver.isSolvable());
+    }
+
+    @Test
+    public void solverForUnsolvable() {
+        Board exampleBoard = createExampleBoard().twin();
+        Solver solver = new Solver(exampleBoard);
+        Assertions.assertFalse(solver.isSolvable());
     }
 
 

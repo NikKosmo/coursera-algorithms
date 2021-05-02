@@ -115,10 +115,10 @@ public class Board {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Board board = (Board) o;
-//        for (int row = 0; row < size; row++) {
-//            System.out.println(board.tiles[row] == tiles[row]);
-//        }
-        return size == board.size && Arrays.deepEquals(tiles, board.tiles);
+        return size == board.size
+                && emptyRow == board.emptyRow
+                && emptyCol == board.emptyCol
+                && Arrays.deepEquals(tiles, board.tiles);
     }
 
     private Board moveUp() {
@@ -200,11 +200,9 @@ public class Board {
 
     public Board twin() {
         int[][] result = Arrays.copyOf(tiles, size);
-        if (emptyRow == 0) {
-            result[size - 1] = swapHorizontal(result[size - 1], 0, 1);
-        } else {
-            result[0] = swapHorizontal(result[0], 0, 1);
-        }
+        int targetCol = emptyCol == 0 ? 1 : emptyCol - 1;
+        int targetRow = emptyRow == 0 ? 1 : emptyRow - 1;
+        result[targetRow] = swapHorizontal(result[targetRow], emptyCol, targetCol);
         return createNewBoard(result, emptyRow, emptyCol);
     }
 
