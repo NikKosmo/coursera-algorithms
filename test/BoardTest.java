@@ -86,6 +86,7 @@ class BoardTest {
     @Test
     public void solverForUnsolvable() {
         Board exampleBoard = createExampleBoard().twin();
+        System.out.println(exampleBoard);
         Solver solver = new Solver(exampleBoard);
         Assertions.assertFalse(solver.isSolvable());
     }

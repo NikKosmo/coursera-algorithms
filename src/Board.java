@@ -6,11 +6,11 @@ public class Board {
 
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
-    private int[][] tiles;
-    private short size;
-    private short emptyRow = -1;
-    private short emptyCol = -1;
-    private int hamming = -1;
+    private short[][] tiles;
+    private byte size;
+    private byte emptyRow = -1;
+    private byte emptyCol = -1;
+    private short hamming = -1;
     private int manhattan = -1;
     private List<Board> neighbours;
 
@@ -19,20 +19,19 @@ public class Board {
 
     public Board(int[][] tiles) {
         this.tiles = deepCopy(tiles);
-        this.size = (short) tiles.length;
+        this.size = (byte) tiles.length;
     }
 
-    private int[][] deepCopy(int[][] tiles) {
-        int[][] result = new int[tiles.length][];
-        for (short row = 0; row < tiles.length; row++) {
-            result[row] = Arrays.copyOf(tiles[row], tiles.length);
-            if (emptyRow < 0) {
-                for (short col = 0; col < tiles.length; col++) {
-                    if (tiles[row][col] == 0) {
-                        emptyRow = row;
-                        emptyCol = col;
-                        break;
-                    }
+    private short[][] deepCopy(int[][] tiles) {
+        short[][] result = new short[tiles.length][];
+        for (byte row = 0; row < tiles.length; row++) {
+            result[row] = new short[tiles.length];
+            for (byte col = 0; col < tiles.length; col++) {
+                int tile = tiles[row][col];
+                result[row][col] = (short) tile;
+                if (tile == 0) {
+                    emptyRow = row;
+                    emptyCol = col;
                 }
             }
         }
@@ -64,7 +63,7 @@ public class Board {
                     result += hammingByPoint(row, col);
                 }
             }
-            hamming = result;
+            hamming = (short) result;
         }
         return hamming;
     }
@@ -122,20 +121,20 @@ public class Board {
     }
 
     private Board moveUp() {
-        int[][] result = Arrays.copyOf(tiles, size);
-        short resultEmptyRow = (short) (emptyRow - 1);
+        short[][] result = Arrays.copyOf(tiles, size);
+        byte resultEmptyRow = (byte) (emptyRow - 1);
         swapVertical(result, resultEmptyRow);
         return createNewBoard(result, resultEmptyRow, emptyCol);
     }
 
     private Board moveDown() {
-        int[][] result = Arrays.copyOf(tiles, size);
-        short resultEmptyRow = (short) (emptyRow + 1);
+        short[][] result = Arrays.copyOf(tiles, size);
+        byte resultEmptyRow = (byte) (emptyRow + 1);
         swapVertical(result, resultEmptyRow);
         return createNewBoard(result, resultEmptyRow, emptyCol);
     }
 
-    private void swapVertical(int[][] result, int targetRow) {
+    private void swapVertical(short[][] result, int targetRow) {
         result[targetRow] = Arrays.copyOf(result[targetRow], size);
         result[emptyRow] = Arrays.copyOf(result[emptyRow], size);
         result[targetRow][emptyCol] = tiles[emptyRow][emptyCol];
@@ -143,9 +142,9 @@ public class Board {
     }
 
     private Board moveRight() {
-        short resultEmptyCol = (short) (emptyCol + 1);
-        int[][] result = new int[tiles.length][];
-        for (short row = 0; row < size; row++) {
+        byte resultEmptyCol = (byte) (emptyCol + 1);
+        short[][] result = new short[tiles.length][];
+        for (byte row = 0; row < size; row++) {
             if (row == emptyRow) {
                 result[row] = swapHorizontal(tiles[row], resultEmptyCol);
             } else {
@@ -156,9 +155,9 @@ public class Board {
     }
 
     private Board moveLeft() {
-        short resultEmptyCol = (short) (emptyCol - 1);
-        int[][] result = new int[tiles.length][];
-        for (short row = 0; row < size; row++) {
+        byte resultEmptyCol = (byte) (emptyCol - 1);
+        short[][] result = new short[tiles.length][];
+        for (byte row = 0; row < size; row++) {
             if (row == emptyRow) {
                 result[row] = swapHorizontal(tiles[row], resultEmptyCol);
             } else {
@@ -168,12 +167,12 @@ public class Board {
         return createNewBoard(result, emptyRow, resultEmptyCol);
     }
 
-    private int[] swapHorizontal(int[] row, int swappedPlace) {
+    private short[] swapHorizontal(short[] row, int swappedPlace) {
         return swapHorizontal(row, emptyCol, swappedPlace);
     }
 
-    private int[] swapHorizontal(int[] row, int one, int another) {
-        int[] result = Arrays.copyOf(row, size);
+    private short[] swapHorizontal(short[] row, int one, int another) {
+        short[] result = Arrays.copyOf(row, size);
         result[one] = row[another];
         result[another] = row[one];
         return result;
@@ -199,17 +198,17 @@ public class Board {
     }
 
     public Board twin() {
-        int[][] result = Arrays.copyOf(tiles, size);
+        short[][] result = Arrays.copyOf(tiles, size);
         int targetCol = emptyCol == 0 ? 1 : emptyCol - 1;
         int targetRow = emptyRow == 0 ? 1 : emptyRow - 1;
         result[targetRow] = swapHorizontal(result[targetRow], emptyCol, targetCol);
         return createNewBoard(result, emptyRow, emptyCol);
     }
 
-    private Board createNewBoard(int[][] board, short newEmptyRow, short newEmptyCol) {
+    private Board createNewBoard(short[][] board, byte newEmptyRow, byte newEmptyCol) {
         Board result = new Board();
         result.tiles = board;
-        result.size = (short) board.length;
+        result.size = (byte) board.length;
         result.emptyRow = newEmptyRow;
         result.emptyCol = newEmptyCol;
         return result;
