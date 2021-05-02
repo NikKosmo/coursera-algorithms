@@ -25,7 +25,6 @@ public class Solver {
     private void solve(MinPQ<SearchNode> minPQ) {
         SearchNode currentNode = minPQ.delMin();
         boolean solvable = true;
-        boolean inFinalStage = false;
         while (!currentNode.isSolved() && solvable) {
             currentNode.getNeighbours()
                     .forEach(minPQ::insert);
@@ -77,7 +76,7 @@ public class Solver {
             searchNode.board = board;
             searchNode.previousNode = previousNode;
             searchNode.moves = moves;
-            searchNode.score = board.hamming();
+            searchNode.score = board.manhattan();
             searchNode.priority = moves + searchNode.score;
             return searchNode;
         }
