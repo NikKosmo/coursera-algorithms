@@ -2,7 +2,6 @@ import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 
 import java.util.Comparator;
-import java.util.TreeSet;
 
 public class KdTree {
 
@@ -10,7 +9,6 @@ public class KdTree {
     private int size;
 
     public KdTree() {
-
     }
 
     public boolean isEmpty() {
@@ -24,28 +22,24 @@ public class KdTree {
     // add the point to the set (if it is not already in the set)
     public void insert(Point2D p) {
         checkNotNull(p);
-        insert(p, root, true);
+        root = insert(p, root, true);
     }
 
-    private void insert(Point2D point, Node node, boolean vertical) {
+    private Node insert(Point2D point, Node node, boolean vertical) {
         if (node != null) {
             if (!node.point.equals(point)) {
                 int i = vertical ?
-                        Comparator.comparingDouble(Point2D::x).compare(node.point, point) :
-                        Comparator.comparingDouble(Point2D::y).compare(node.point, point);
+                        Comparator.comparingDouble(Point2D::x).compare(point, node.point) :
+                        Comparator.comparingDouble(Point2D::y).compare(point, node.point);
                 if (i < 0) {
-                    if (node.leftNode == null) {
-                        node.leftNode = Node.of(point);
-                    }
-                    insert(point, node.leftNode, !vertical);
+                    node.leftNode = insert(point, node.leftNode, !vertical);
                 } else {
-                    if (node.rightNode == null) {
-                        node.rightNode = Node.of(point);
-                    }
-                    insert(point, node.rightNode, !vertical);
+                    node.rightNode = insert(point, node.rightNode, !vertical);
                 }
             }
+            return node;
         }
+        return Node.of(point, !vertical);
     }
 
     public boolean contains(Point2D p) {
@@ -53,13 +47,17 @@ public class KdTree {
         return contains(p, root);
     }
 
-    private boolean contains(Point2D p, Node node) {
+    private boolean contains(Point2D point, Node node) {
         if (node != null) {
-            int i = node.point.compareTo(p);
-            if (i < 0) {
-                contains(p, node.leftNode);
-            } else if (i > 0) {
-                contains(p, node.rightNode);
+            if (!node.point.equals(point)) {
+                int i = node.vertical ?
+                        Comparator.comparingDouble(Point2D::x).compare(point, node.point) :
+                        Comparator.comparingDouble(Point2D::y).compare(point, node.point);
+                if (i < 0) {
+                    contains(point, node.leftNode);
+                } else {
+                    contains(point, node.rightNode);
+                }
             }
             return true;
         }
@@ -99,7 +97,7 @@ public class KdTree {
         private Node leftNode;
         private Node rightNode;
 
-        public static Node of(Point2D point) {
+        public static Node of(Point2D point, boolean vertical) {
             Node node = new Node();
             node.point = point;
             return node;
