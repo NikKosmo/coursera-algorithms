@@ -34,7 +34,7 @@ public class PointSET {
     }
 
     public void draw() {
-
+        points.forEach(Point2D::draw);
     }
 
     // all points that are inside the rectangle (or on the boundary)
@@ -60,6 +60,7 @@ public class PointSET {
                 result = point;
             } else if (distance < distanceToResult) {
                 result = point;
+                distanceToResult = distance;
             }
         }
         return result;
