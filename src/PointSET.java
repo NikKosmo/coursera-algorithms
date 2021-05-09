@@ -55,9 +55,10 @@ public class PointSET {
         Point2D result = null;
         double distanceToResult = 0;
         for (Point2D point : points) {
-            double distance = point.distanceTo(p);
+            double distance = point.distanceSquaredTo(p);
             if (result == null) {
                 result = point;
+                distanceToResult = distance;
             } else if (distance < distanceToResult) {
                 result = point;
                 distanceToResult = distance;

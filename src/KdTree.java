@@ -1,7 +1,9 @@
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 
 public class KdTree {
 
@@ -39,6 +41,7 @@ public class KdTree {
             }
             return node;
         }
+        size++;
         return Node.of(point, !vertical);
     }
 
@@ -54,9 +57,9 @@ public class KdTree {
                         Comparator.comparingDouble(Point2D::x).compare(point, node.point) :
                         Comparator.comparingDouble(Point2D::y).compare(point, node.point);
                 if (i < 0) {
-                    contains(point, node.leftNode);
+                    return contains(point, node.leftNode);
                 } else {
-                    contains(point, node.rightNode);
+                    return contains(point, node.rightNode);
                 }
             }
             return true;
@@ -71,7 +74,21 @@ public class KdTree {
     // all points that are inside the rectangle (or on the boundary)
     public Iterable<Point2D> range(RectHV rect) {
         checkNotNull(rect);
-        return null;
+        if (isEmpty()) {
+            return null;
+        }
+        List<Point2D> result = new ArrayList<>();
+        addPointsInRange(root, rect, result);
+        return result;
+    }
+
+    private void addPointsInRange(Node root, RectHV rect, List<Point2D> result) {
+        if (root.leftNode != null) {
+
+        }
+        if (root.leftNode != null) {
+
+        }
     }
 
     // a nearest neighbor in the set to point p; null if the set is empty
@@ -80,7 +97,28 @@ public class KdTree {
         if (isEmpty()) {
             return null;
         }
-        return p;
+        return nearest(p, root);
+    }
+
+    // TODO: 08.05.2021  
+    private Point2D nearest(Point2D p, Node node) {
+        double distance = p.distanceSquaredTo(node.point);
+        Node closerNode = node.leftNode;
+        Node furtherNode = node.rightNode;
+        if (closerNode != null && distance > p.distanceSquaredTo(closerNode.point)) {
+            Point2D nearestFromNode = nearest(p, closerNode);
+            double distanceToOne = p.distanceSquaredTo(nearestFromNode);
+            if (furtherNode != null && distanceToOne > p.distanceSquaredTo(furtherNode.point)) {
+                Point2D nearestFromAnother = nearest(p, furtherNode);
+                double distanceToAnother = p.distanceSquaredTo(nearestFromAnother);
+                return distanceToOne < distanceToAnother ?
+                        nearestFromNode :
+                        nearestFromAnother;
+            }
+        } else if (furtherNode != null && distance > p.distanceSquaredTo(furtherNode.point)) {
+            return nearest(p, furtherNode);
+        }
+        return node.point;
     }
 
     private void checkNotNull(Object o) {
@@ -100,6 +138,7 @@ public class KdTree {
         public static Node of(Point2D point, boolean vertical) {
             Node node = new Node();
             node.point = point;
+            node.vertical = vertical;
             return node;
         }
 
