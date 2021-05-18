@@ -9,8 +9,8 @@ public class KdTree {
 
     private Node root;
     private int size;
-    private double maxY = 0;
-    private double maxX = 0;
+    private double maxY;
+    private double maxX;
 
     public KdTree() {
     }
@@ -196,8 +196,8 @@ public class KdTree {
                 new RectHV(area.xmin(), node.point.y(), area.xmax(), area.ymax());
     }
 
-    private void checkNotNull(Object o) {
-        if (o == null) {
+    private void checkNotNull(Object object) {
+        if (object == null) {
             throw new IllegalArgumentException();
         }
     }
@@ -205,7 +205,6 @@ public class KdTree {
     private static class Node {
 
         private Point2D point;
-        private int size;
         private boolean vertical;
         private Node leftNode;
         private Node rightNode;
@@ -215,14 +214,6 @@ public class KdTree {
             node.point = point;
             node.vertical = vertical;
             return node;
-        }
-
-        public int getSize() {
-            return size;
-        }
-
-        public void setSize(int size) {
-            this.size = size;
         }
     }
 

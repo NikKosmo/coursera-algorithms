@@ -67,13 +67,13 @@ public class PointSET {
         return result;
     }
 
-    private void checkNotNull(Object o) {
-        if (o == null) {
+    private void checkNotNull(Object object) {
+        if (object == null) {
             throw new IllegalArgumentException();
         }
     }
 
     public static void main(String[] args) {
-
+        // do nothing
     }
 }
