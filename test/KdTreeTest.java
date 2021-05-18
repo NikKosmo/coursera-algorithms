@@ -3,10 +3,7 @@ import edu.princeton.cs.algs4.RectHV;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -112,6 +109,23 @@ class KdTreeTest {
         kdTree.range(rectHV).forEach(kdTreeResult::add);
         Assertions.assertEquals(pointSetResult.size(), kdTreeResult.size());
         Assertions.assertEquals(pointSetResult, kdTreeResult);
+    }
+
+    @Test
+    public void specificTest() {
+        KdTree kdTree = new KdTree();
+        PointSET pointSET = new PointSET();
+        Point2D targetPoint = new Point2D(.2, .3);
+        List<Point2D> points = Arrays.asList(new Point2D(.7, .2),
+                                             new Point2D(.5, .4),
+                                             targetPoint,
+                                             new Point2D(.4, .7),
+                                             new Point2D(.9, .6));
+        points.forEach(kdTree::insert);
+        points.forEach(pointSET::insert);
+
+        Assertions.assertTrue(pointSET.contains(targetPoint));
+        Assertions.assertTrue(kdTree.contains(targetPoint));
     }
 
     private KdTree createFiveDiagonalPoints() {

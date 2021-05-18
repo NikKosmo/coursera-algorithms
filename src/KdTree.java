@@ -26,7 +26,7 @@ public class KdTree {
     // add the point to the set (if it is not already in the set)
     public void insert(Point2D p) {
         checkNotNull(p);
-        root = insert(p, root, false);
+        root = insert(p, root, true);
     }
 
     private Node insert(Point2D point, Node node, boolean vertical) {
@@ -45,7 +45,7 @@ public class KdTree {
         }
         size++;
         updateMaxes(point);
-        return Node.of(point, !vertical);
+        return Node.of(point, vertical);
     }
 
     private void updateMaxes(Point2D point) {
@@ -117,7 +117,6 @@ public class KdTree {
         }
     }
 
-    // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
         checkNotNull(p);
         if (isEmpty()) {
@@ -197,10 +196,6 @@ public class KdTree {
                 new RectHV(area.xmin(), node.point.y(), area.xmax(), area.ymax());
     }
 
-    private double distanceToAreaSquared(Point2D p, Point2D nodePoint, Point2D subNodePoint) {
-        return 0;
-    }
-
     private void checkNotNull(Object o) {
         if (o == null) {
             throw new IllegalArgumentException();
@@ -221,20 +216,6 @@ public class KdTree {
             node.vertical = vertical;
             return node;
         }
-
-//        public double getSquaredDistanceToRightNode(Point2D point) {
-//            return getSquaredDistanceToNode(point, rightNode);
-//        }
-//
-//        public double getSquaredDistanceToLeftNode(Point2D point) {
-//            return getSquaredDistanceToNode(point, leftNode);
-//        }
-//
-//        private double getSquaredDistanceToNode(Point2D point, Node subNode) {
-//            return subNode != null ?
-//                    0 :
-//                    Double.MAX_VALUE;
-//        }
 
         public int getSize() {
             return size;
