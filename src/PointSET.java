@@ -2,16 +2,16 @@ import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 public class PointSET {
 
     private final Set<Point2D> points;
 
     public PointSET() {
-        this.points = new HashSet<>();
+        this.points = new TreeSet<>();
     }
 
     public boolean isEmpty() {
