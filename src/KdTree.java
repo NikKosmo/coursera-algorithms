@@ -76,7 +76,15 @@ public class KdTree {
     }
 
     public void draw() {
+        draw(root);
+    }
 
+    private void draw(Node node) {
+        if (node != null) {
+            node.point.draw();
+            draw(node.rightNode);
+            draw(node.leftNode);
+        }
     }
 
     // all points that are inside the rectangle (or on the boundary)
