@@ -9,6 +9,8 @@ public class KdTree {
 
     private Node root;
     private int size;
+    private double maxY = 0;
+    private double maxX = 0;
 
     public KdTree() {
     }
@@ -24,7 +26,7 @@ public class KdTree {
     // add the point to the set (if it is not already in the set)
     public void insert(Point2D p) {
         checkNotNull(p);
-        root = insert(p, root, true);
+        root = insert(p, root, false);
     }
 
     private Node insert(Point2D point, Node node, boolean vertical) {
@@ -42,7 +44,13 @@ public class KdTree {
             return node;
         }
         size++;
+        updateMaxes(point);
         return Node.of(point, !vertical);
+    }
+
+    private void updateMaxes(Point2D point) {
+        maxY = Math.max(point.y(), maxY);
+        maxX = Math.max(point.x(), maxX);
     }
 
     public boolean contains(Point2D p) {
@@ -97,28 +105,48 @@ public class KdTree {
         if (isEmpty()) {
             return null;
         }
-        return nearest(p, root);
+        return nearest(p, root, new RectHV(0, 0, maxX, maxY));
     }
 
     // TODO: 08.05.2021  
-    private Point2D nearest(Point2D p, Node node) {
-        double distance = p.distanceSquaredTo(node.point);
-        Node closerNode = node.leftNode;
-        Node furtherNode = node.rightNode;
-        if (closerNode != null && distance > p.distanceSquaredTo(closerNode.point)) {
+    private Point2D nearest(Point2D p, Node node, RectHV area) {
+        double distanceToNodePoint = p.distanceSquaredTo(node.point);
+
+        double squaredDistanceToRightNode = node.getSquaredDistanceToRightNode(p);
+        double squaredDistanceToLeftNode = node.getSquaredDistanceToLeftNode(p);
+        Node closerNode;
+        double closerNodeDistance;
+        Node furtherNode;
+        double furtherNodeDistance;
+        if (squaredDistanceToRightNode < squaredDistanceToLeftNode) {
+            closerNode = node.rightNode;
+            closerNodeDistance = squaredDistanceToRightNode;
+            furtherNode = node.leftNode;
+            furtherNodeDistance = squaredDistanceToLeftNode;
+        } else {
+            closerNode = node.leftNode;
+            closerNodeDistance = squaredDistanceToLeftNode;
+            furtherNode = node.rightNode;
+            furtherNodeDistance = squaredDistanceToRightNode;
+        }
+        if (closerNode != null && distanceToNodePoint > closerNodeDistance) {
             Point2D nearestFromNode = nearest(p, closerNode);
             double distanceToOne = p.distanceSquaredTo(nearestFromNode);
-            if (furtherNode != null && distanceToOne > p.distanceSquaredTo(furtherNode.point)) {
+            if (furtherNode != null && distanceToOne > furtherNodeDistance) {
                 Point2D nearestFromAnother = nearest(p, furtherNode);
                 double distanceToAnother = p.distanceSquaredTo(nearestFromAnother);
                 return distanceToOne < distanceToAnother ?
                         nearestFromNode :
                         nearestFromAnother;
             }
-        } else if (furtherNode != null && distance > p.distanceSquaredTo(furtherNode.point)) {
+        } else if (furtherNode != null && distanceToNodePoint > furtherNodeDistance) {
             return nearest(p, furtherNode);
         }
         return node.point;
+    }
+
+    private double distanceToAreaSquared(Point2D p, Point2D nodePoint, Point2D subNodePoint) {
+        return 0;
     }
 
     private void checkNotNull(Object o) {
@@ -127,7 +155,7 @@ public class KdTree {
         }
     }
 
-    private static class Node implements Comparable<Node> {
+    private static class Node {
 
         private Point2D point;
         private int size;
@@ -142,19 +170,26 @@ public class KdTree {
             return node;
         }
 
+        public double getSquaredDistanceToRightNode(Point2D point) {
+            return getSquaredDistanceToNode(point, rightNode);
+        }
+
+        public double getSquaredDistanceToLeftNode(Point2D point) {
+            return getSquaredDistanceToNode(point, leftNode);
+        }
+
+        private double getSquaredDistanceToNode(Point2D point, Node subNode) {
+            return subNode != null ?
+                    0 :
+                    Double.MAX_VALUE;
+        }
+
         public int getSize() {
             return size;
         }
 
         public void setSize(int size) {
             this.size = size;
-        }
-
-        @Override
-        public int compareTo(Node that) {
-            return vertical ?
-                    Comparator.comparingDouble(Point2D::x).compare(this.point, that.point) :
-                    Comparator.comparingDouble(Point2D::y).compare(this.point, that.point);
         }
     }
 

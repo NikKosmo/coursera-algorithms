@@ -61,8 +61,7 @@ class KdTreeTest {
         points.forEach(pointSET::insert);
 
         Point2D point2D = new Point2D(0, 100);
-        Point2D expected = pointSET.nearest(point2D);
-        Assertions.assertEquals(expected, kdTree.nearest(point2D));
+        Assertions.assertEquals(pointSET.nearest(point2D), kdTree.nearest(point2D));
     }
 
     @Test
@@ -73,9 +72,7 @@ class KdTreeTest {
         for (int i = 0; i < 5; i++) {
             pointSET.insert(new Point2D(i, i));
         }
-        Point2D expected = pointSET.nearest(point2D);
-        Assertions.assertEquals(new Point2D(2, 2), kdTree.nearest(point2D));
-        Assertions.assertEquals(new Point2D(2, 2), pointSET.nearest(point2D));
+        Assertions.assertEquals(pointSET.nearest(point2D), kdTree.nearest(point2D));
     }
 
     private KdTree createFiveDiagonalPoints() {
