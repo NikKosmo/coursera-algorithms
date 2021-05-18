@@ -1,5 +1,6 @@
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
+import edu.princeton.cs.algs4.StdDraw;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -141,6 +142,7 @@ public class KdTree {
         Node furtherNode;
         double furtherNodeDistance;
         RectHV furtherNodeArea;
+        draw(node, area);
         if (squaredDistanceToRightNode < squaredDistanceToLeftNode) {
             closerNode = node.rightNode;
             closerNodeDistance = squaredDistanceToRightNode;
@@ -182,6 +184,17 @@ public class KdTree {
                     node.point;
         }
         return node.point;
+    }
+
+    private void draw(Node node, RectHV area) {
+        StdDraw.setPenRadius(0.005);
+        if (node.vertical) {
+            StdDraw.setPenColor(StdDraw.RED);
+            StdDraw.line(node.point.x(), area.ymin(), node.point.x(), area.ymax());
+        } else {
+            StdDraw.setPenColor(StdDraw.BLUE);
+            StdDraw.line(area.xmin(), node.point.y(), area.xmax(), node.point.y());
+        }
     }
 
     private RectHV getLeftSubNodeArea(Node node, RectHV area) {
