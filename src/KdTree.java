@@ -86,15 +86,25 @@ public class KdTree {
             return null;
         }
         List<Point2D> result = new ArrayList<>();
-        addPointsInRange(root, rect, result);
+        addPointsInRange(root, rect, getBasicPlain(), result);
         return result;
     }
 
-    private void addPointsInRange(Node root, RectHV rect, List<Point2D> result) {
-        if (root.leftNode != null) {
-
+    private void addPointsInRange(Node node, RectHV rect, RectHV area, List<Point2D> result) {
+        if (rect.contains(node.point)) {
+            result.add(node.point);
         }
-        if (root.leftNode != null) {
+        if (node.leftNode != null) {
+            RectHV leftSubNodeArea = getLeftSubNodeArea(node, area);
+            if (leftSubNodeArea.intersects(rect)) {
+                addPointsInRange(node.leftNode, rect, leftSubNodeArea, result);
+            }
+        }
+        if (node.rightNode != null) {
+            RectHV rightSubNodeArea = getRightSubNodeArea(node, area);
+            if (rightSubNodeArea.intersects(rect)) {
+                addPointsInRange(node.rightNode, rect, rightSubNodeArea, result);
+            }
 
         }
     }
@@ -105,44 +115,78 @@ public class KdTree {
         if (isEmpty()) {
             return null;
         }
-        return nearest(p, root, new RectHV(0, 0, maxX, maxY));
+        return nearest(p, root, getBasicPlain());
     }
 
-    // TODO: 08.05.2021  
+    private RectHV getBasicPlain() {
+        return new RectHV(0, 0, maxX, maxY);
+    }
+
     private Point2D nearest(Point2D p, Node node, RectHV area) {
         double distanceToNodePoint = p.distanceSquaredTo(node.point);
-
-        double squaredDistanceToRightNode = node.getSquaredDistanceToRightNode(p);
-        double squaredDistanceToLeftNode = node.getSquaredDistanceToLeftNode(p);
+        RectHV rightSubNodeArea = getRightSubNodeArea(node, area);
+        RectHV leftSubNodeArea = getLeftSubNodeArea(node, area);
+        double squaredDistanceToRightNode = rightSubNodeArea.distanceSquaredTo(p);
+        double squaredDistanceToLeftNode = leftSubNodeArea.distanceSquaredTo(p);
         Node closerNode;
         double closerNodeDistance;
+        RectHV closerNodeArea;
         Node furtherNode;
         double furtherNodeDistance;
+        RectHV furtherNodeArea;
         if (squaredDistanceToRightNode < squaredDistanceToLeftNode) {
             closerNode = node.rightNode;
             closerNodeDistance = squaredDistanceToRightNode;
+            closerNodeArea = rightSubNodeArea;
             furtherNode = node.leftNode;
             furtherNodeDistance = squaredDistanceToLeftNode;
+            furtherNodeArea = leftSubNodeArea;
         } else {
             closerNode = node.leftNode;
             closerNodeDistance = squaredDistanceToLeftNode;
+            closerNodeArea = leftSubNodeArea;
             furtherNode = node.rightNode;
             furtherNodeDistance = squaredDistanceToRightNode;
+            furtherNodeArea = rightSubNodeArea;
         }
         if (closerNode != null && distanceToNodePoint > closerNodeDistance) {
-            Point2D nearestFromNode = nearest(p, closerNode);
-            double distanceToOne = p.distanceSquaredTo(nearestFromNode);
-            if (furtherNode != null && distanceToOne > furtherNodeDistance) {
-                Point2D nearestFromAnother = nearest(p, furtherNode);
-                double distanceToAnother = p.distanceSquaredTo(nearestFromAnother);
-                return distanceToOne < distanceToAnother ?
-                        nearestFromNode :
-                        nearestFromAnother;
+            Point2D nearestFromCloserNode = nearest(p, closerNode, closerNodeArea);
+            double distanceToNearestFromNode = p.distanceSquaredTo(nearestFromCloserNode);
+            if (furtherNode != null && distanceToNearestFromNode > furtherNodeDistance) {
+                Point2D nearestFromFurtherNode = nearest(p, furtherNode, furtherNodeArea);
+                double distanceToAnother = p.distanceSquaredTo(nearestFromFurtherNode);
+                double distanceToNearestFromSubNodes = Math.min(distanceToNearestFromNode, distanceToAnother);
+                Point2D nearestFromSubNodes = distanceToNearestFromNode < distanceToAnother ?
+                        nearestFromCloserNode :
+                        nearestFromFurtherNode;
+                return distanceToNearestFromSubNodes < distanceToNodePoint ?
+                        nearestFromSubNodes :
+                        node.point;
+            } else {
+                return distanceToNearestFromNode < distanceToNodePoint ?
+                        nearestFromCloserNode :
+                        node.point;
             }
         } else if (furtherNode != null && distanceToNodePoint > furtherNodeDistance) {
-            return nearest(p, furtherNode);
+            Point2D nearestFromNode = nearest(p, furtherNode, furtherNodeArea);
+            double distanceToNearestFromNode = p.distanceSquaredTo(nearestFromNode);
+            return distanceToNearestFromNode < distanceToNodePoint ?
+                    nearestFromNode :
+                    node.point;
         }
         return node.point;
+    }
+
+    private RectHV getLeftSubNodeArea(Node node, RectHV area) {
+        return node.vertical ?
+                new RectHV(area.xmin(), area.ymin(), node.point.x(), area.ymax()) :
+                new RectHV(area.xmin(), area.ymin(), area.xmax(), node.point.y());
+    }
+
+    private RectHV getRightSubNodeArea(Node node, RectHV area) {
+        return node.vertical ?
+                new RectHV(node.point.x(), area.ymin(), area.xmax(), area.ymax()) :
+                new RectHV(area.xmin(), node.point.y(), area.xmax(), area.ymax());
     }
 
     private double distanceToAreaSquared(Point2D p, Point2D nodePoint, Point2D subNodePoint) {
@@ -170,19 +214,19 @@ public class KdTree {
             return node;
         }
 
-        public double getSquaredDistanceToRightNode(Point2D point) {
-            return getSquaredDistanceToNode(point, rightNode);
-        }
-
-        public double getSquaredDistanceToLeftNode(Point2D point) {
-            return getSquaredDistanceToNode(point, leftNode);
-        }
-
-        private double getSquaredDistanceToNode(Point2D point, Node subNode) {
-            return subNode != null ?
-                    0 :
-                    Double.MAX_VALUE;
-        }
+//        public double getSquaredDistanceToRightNode(Point2D point) {
+//            return getSquaredDistanceToNode(point, rightNode);
+//        }
+//
+//        public double getSquaredDistanceToLeftNode(Point2D point) {
+//            return getSquaredDistanceToNode(point, leftNode);
+//        }
+//
+//        private double getSquaredDistanceToNode(Point2D point, Node subNode) {
+//            return subNode != null ?
+//                    0 :
+//                    Double.MAX_VALUE;
+//        }
 
         public int getSize() {
             return size;
