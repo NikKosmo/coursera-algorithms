@@ -1,6 +1,5 @@
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
-import edu.princeton.cs.algs4.StdDraw;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -123,15 +122,12 @@ public class KdTree {
         if (isEmpty()) {
             return null;
         }
-        return nearest(p, root, getBasicPlain());
+        return nearest(p, root.point, root, getBasicPlain());
     }
 
-    private RectHV getBasicPlain() {
-        return new RectHV(0, 0, maxX, maxY);
-    }
-
-    private Point2D nearest(Point2D p, Node node, RectHV area) {
-        double distanceToNodePoint = p.distanceSquaredTo(node.point);
+    private Point2D nearest(Point2D p, Point2D currentChampion, Node node, RectHV area) {
+        currentChampion = getChampion(p, currentChampion, node.point);
+        double championDistance = p.distanceSquaredTo(currentChampion);
         RectHV rightSubNodeArea = getRightSubNodeArea(node, area);
         RectHV leftSubNodeArea = getLeftSubNodeArea(node, area);
         double squaredDistanceToRightNode = rightSubNodeArea.distanceSquaredTo(p);
@@ -142,7 +138,7 @@ public class KdTree {
         Node furtherNode;
         double furtherNodeDistance;
         RectHV furtherNodeArea;
-        draw(node, area);
+//        draw(node, area);
         if (squaredDistanceToRightNode < squaredDistanceToLeftNode) {
             closerNode = node.rightNode;
             closerNodeDistance = squaredDistanceToRightNode;
@@ -158,44 +154,43 @@ public class KdTree {
             furtherNodeDistance = squaredDistanceToRightNode;
             furtherNodeArea = rightSubNodeArea;
         }
-        if (closerNode != null && distanceToNodePoint > closerNodeDistance) {
-            Point2D nearestFromCloserNode = nearest(p, closerNode, closerNodeArea);
-            double distanceToNearestFromNode = p.distanceSquaredTo(nearestFromCloserNode);
-            if (furtherNode != null && distanceToNearestFromNode > furtherNodeDistance) {
-                Point2D nearestFromFurtherNode = nearest(p, furtherNode, furtherNodeArea);
-                double distanceToAnother = p.distanceSquaredTo(nearestFromFurtherNode);
-                double distanceToNearestFromSubNodes = Math.min(distanceToNearestFromNode, distanceToAnother);
-                Point2D nearestFromSubNodes = distanceToNearestFromNode < distanceToAnother ?
-                        nearestFromCloserNode :
-                        nearestFromFurtherNode;
-                return distanceToNearestFromSubNodes < distanceToNodePoint ?
-                        nearestFromSubNodes :
-                        node.point;
-            } else {
-                return distanceToNearestFromNode < distanceToNodePoint ?
-                        nearestFromCloserNode :
-                        node.point;
-            }
-        } else if (furtherNode != null && distanceToNodePoint > furtherNodeDistance) {
-            Point2D nearestFromNode = nearest(p, furtherNode, furtherNodeArea);
-            double distanceToNearestFromNode = p.distanceSquaredTo(nearestFromNode);
-            return distanceToNearestFromNode < distanceToNodePoint ?
-                    nearestFromNode :
-                    node.point;
+        if (closerNode != null && championDistance >= closerNodeDistance) {
+            Point2D closerNodeChampion = nearest(p, currentChampion, closerNode, closerNodeArea);
+            currentChampion = getChampion(p, currentChampion, closerNodeChampion);
+            championDistance = p.distanceSquaredTo(currentChampion);
         }
-        return node.point;
+        if (furtherNode != null && championDistance >= furtherNodeDistance) {
+            Point2D furtherNodeChampion = nearest(p, currentChampion, furtherNode, furtherNodeArea);
+            currentChampion = getChampion(p, currentChampion, furtherNodeChampion);
+        }
+        return currentChampion;
     }
 
-    private void draw(Node node, RectHV area) {
-        StdDraw.setPenRadius(0.005);
-        if (node.vertical) {
-            StdDraw.setPenColor(StdDraw.RED);
-            StdDraw.line(node.point.x(), area.ymin(), node.point.x(), area.ymax());
-        } else {
-            StdDraw.setPenColor(StdDraw.BLUE);
-            StdDraw.line(area.xmin(), node.point.y(), area.xmax(), node.point.y());
+    private Point2D getChampion(Point2D target, Point2D a, Point2D b) {
+        if (a != b) {
+            double distanceToA = target.distanceSquaredTo(a);
+            double distanceToB = target.distanceSquaredTo(b);
+            return distanceToA < distanceToB ?
+                    a :
+                    b;
         }
+        return a;
     }
+
+    private RectHV getBasicPlain() {
+        return new RectHV(0, 0, maxX, maxY);
+    }
+
+//    private void draw(Node node, RectHV area) {
+//        StdDraw.setPenRadius(0.005);
+//        if (node.vertical) {
+//            StdDraw.setPenColor(StdDraw.RED);
+//            StdDraw.line(node.point.x(), area.ymin(), node.point.x(), area.ymax());
+//        } else {
+//            StdDraw.setPenColor(StdDraw.BLUE);
+//            StdDraw.line(area.xmin(), node.point.y(), area.xmax(), node.point.y());
+//        }
+//    }
 
     private RectHV getLeftSubNodeArea(Node node, RectHV area) {
         return node.vertical ?
