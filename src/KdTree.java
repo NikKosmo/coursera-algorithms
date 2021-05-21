@@ -103,17 +103,16 @@ public class KdTree {
             result.add(node.point);
         }
         if (node.leftNode != null) {
-            RectHV leftSubNodeArea = getLeftSubNodeArea(node, area);
+            RectHV leftSubNodeArea = node.getLeftSubNodeArea(area);
             if (leftSubNodeArea.intersects(rect)) {
                 addPointsInRange(node.leftNode, rect, leftSubNodeArea, result);
             }
         }
         if (node.rightNode != null) {
-            RectHV rightSubNodeArea = getRightSubNodeArea(node, area);
+            RectHV rightSubNodeArea = node.getRightSubNodeArea(area);
             if (rightSubNodeArea.intersects(rect)) {
                 addPointsInRange(node.rightNode, rect, rightSubNodeArea, result);
             }
-
         }
     }
 
@@ -128,8 +127,8 @@ public class KdTree {
     private Point2D nearest(Point2D p, Point2D currentChampion, Node node, RectHV area) {
         currentChampion = getChampion(p, currentChampion, node.point);
         double championDistance = p.distanceSquaredTo(currentChampion);
-        RectHV rightSubNodeArea = getRightSubNodeArea(node, area);
-        RectHV leftSubNodeArea = getLeftSubNodeArea(node, area);
+        RectHV rightSubNodeArea = node.getRightSubNodeArea(area);
+        RectHV leftSubNodeArea = node.getLeftSubNodeArea(area);
         double squaredDistanceToRightNode = rightSubNodeArea.distanceSquaredTo(p);
         double squaredDistanceToLeftNode = leftSubNodeArea.distanceSquaredTo(p);
         Node closerNode;
@@ -178,7 +177,8 @@ public class KdTree {
     }
 
     private RectHV getBasicPlain() {
-        return new RectHV(0, 0, maxX, maxY);
+        return new RectHV(0, 0, 1, 1);
+//        return new RectHV(0, 0, maxX, maxY);
     }
 
 //    private void draw(Node node, RectHV area) {
@@ -191,18 +191,6 @@ public class KdTree {
 //            StdDraw.line(area.xmin(), node.point.y(), area.xmax(), node.point.y());
 //        }
 //    }
-
-    private RectHV getLeftSubNodeArea(Node node, RectHV area) {
-        return node.vertical ?
-                new RectHV(area.xmin(), area.ymin(), node.point.x(), area.ymax()) :
-                new RectHV(area.xmin(), area.ymin(), area.xmax(), node.point.y());
-    }
-
-    private RectHV getRightSubNodeArea(Node node, RectHV area) {
-        return node.vertical ?
-                new RectHV(node.point.x(), area.ymin(), area.xmax(), area.ymax()) :
-                new RectHV(area.xmin(), node.point.y(), area.xmax(), area.ymax());
-    }
 
     private void checkNotNull(Object object) {
         if (object == null) {
@@ -222,6 +210,18 @@ public class KdTree {
             node.point = point;
             node.vertical = vertical;
             return node;
+        }
+
+        private RectHV getLeftSubNodeArea(RectHV area) {
+            return vertical ?
+                    new RectHV(area.xmin(), area.ymin(), point.x(), area.ymax()) :
+                    new RectHV(area.xmin(), area.ymin(), area.xmax(), point.y());
+        }
+
+        private RectHV getRightSubNodeArea(RectHV area) {
+            return vertical ?
+                    new RectHV(point.x(), area.ymin(), area.xmax(), area.ymax()) :
+                    new RectHV(area.xmin(), point.y(), area.xmax(), area.ymax());
         }
     }
 
